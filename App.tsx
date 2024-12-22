@@ -10,6 +10,7 @@ import {
 
 import NativeLocalStorage from './specs/NativeLocalStorage';
 import WebView from './specs/NativeWebView';
+import NativeCamera from './specs/NativeCamera';
 
 const EMPTY = '<empty>';
 
@@ -40,8 +41,16 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <Text style={styles.text}>
+    <NativeCamera
+      style={{flex: 1, width: '100%', height: '100%'}}
+      onCameraReady={event => {
+        console.log('Camera Ready', event);
+      }}
+    />
+  );
+}
+
+/*<Text style={styles.text}>
         Current stored value is: {value ?? 'No Value'}
       </Text>
       <TextInput
@@ -59,10 +68,7 @@ function App(): React.JSX.Element {
           Alert.alert('Page Loaded');
         }}
         style={styles.webview}
-      />
-    </SafeAreaView>
-  );
-}
+      />*/
 
 const styles = StyleSheet.create({
   text: {
