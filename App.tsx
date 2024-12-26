@@ -1,94 +1,35 @@
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  Button,
-  Alert,
-} from 'react-native';
+import React, {useRef} from 'react';
 
-import NativeLocalStorage from './specs/NativeLocalStorage';
-import WebView from './specs/NativeWebView';
-import NativeCamera from './specs/NativeCamera';
-
-const EMPTY = '<empty>';
+import NativeCamera, {NativeCameraProps} from './specs/NativeCamera';
+import NativeCameraModule from './specs/NativeCameraModule';
+import {Button, View} from 'react-native';
 
 function App(): React.JSX.Element {
-  const [value, setValue] = React.useState<string | null>(null);
+  const ref = useRef<any>(null);
 
-  const [editingValue, setEditingValue] = React.useState<string | null>(null);
+  async function capture() {
+    try {
+      /* const abc = await NativeCameraModule.capture(); */
+      const abc = await ref.current.capture();
 
-  React.useEffect(() => {
-    const storedValue = NativeLocalStorage?.getItem('myKey');
-    console.log('storedValue', storedValue);
-    setValue(storedValue ?? '');
-  }, []);
-
-  function saveValue() {
-    NativeLocalStorage?.setItem('myKey', editingValue ?? EMPTY);
-    setValue(editingValue);
+      console.log('Capture', abc);
+    } catch (e) {
+      console.log('Error', e);
+    }
   }
-
-  function clearAll() {
-    NativeLocalStorage?.clear();
-    setValue('');
-  }
-
-  function deleteValue() {
-    NativeLocalStorage?.removeItem('myKey');
-    setValue('');
-  }
-
   return (
-    <NativeCamera
-      style={{flex: 1, width: '100%', height: '100%'}}
-      onCameraReady={event => {
-        console.log('Camera Ready', event);
-      }}
-    />
+    <View style={{flex: 1}}>
+      <NativeCamera
+        ref={ref}
+        style={{flex: 1, width: '100%', height: '100%'}}
+        onCameraReady={event => {
+          console.log('Camera Ready', event);
+        }}
+      />
+
+      <Button title="Capture" onPress={capture} />
+    </View>
   );
 }
-
-/*<Text style={styles.text}>
-        Current stored value is: {value ?? 'No Value'}
-      </Text>
-      <TextInput
-        placeholder="Enter the text you want to store"
-        style={styles.textInput}
-        onChangeText={setEditingValue}
-      />
-      <Button title="Save" onPress={saveValue} />
-      <Button title="Delete" onPress={deleteValue} />
-      <Button title="Clear" onPress={clearAll} />
-
-      <WebView
-        sourceURL="https://www.google.com"
-        onScriptLoaded={() => {
-          Alert.alert('Page Loaded');
-        }}
-        style={styles.webview}
-      />*/
-
-const styles = StyleSheet.create({
-  text: {
-    margin: 10,
-    fontSize: 20,
-  },
-  webview: {
-    flex: 1,
-    width: '100%',
-    height: 300,
-  },
-  textInput: {
-    margin: 10,
-    height: 40,
-    borderColor: 'black',
-    borderWidth: 1,
-    paddingLeft: 5,
-    paddingRight: 5,
-    borderRadius: 5,
-  },
-});
 
 export default App;

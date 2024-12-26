@@ -1,6 +1,8 @@
 package com.nativecamera
 
 import android.app.Activity
+import android.content.ContentValues
+import android.net.Uri
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.OrientationEventListener
@@ -13,12 +15,14 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleObserver
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
@@ -26,6 +30,8 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.Event
 import com.nativewebview.ReactWebView.OnScriptLoadedEventResult
 import okhttp3.internal.applyConnectionSpec
+import java.io.File
+import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -45,6 +51,7 @@ class ReactNativeCamera : FrameLayout, LifecycleObserver {
     private var cameraHelper: ReactNativeCameraHelper = ReactNativeCameraHelper()
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
+    private var outputPath: String? = null
 
     constructor(context: ThemedReactContext) : super(context) {
         this.currentContext = context
@@ -169,6 +176,55 @@ class ReactNativeCamera : FrameLayout, LifecycleObserver {
             onCameraReady(OnScriptLoadedEventResult.error)
         }
     }
+
+    fun capture(options: Map<String, Any>, promise: Promise) {
+       val outputPath: String = when {
+           outputPath != null -> outputPath!!
+           else -> {
+               val out = File.createTempFile("ckcap", ".jpg", context.cacheDir)
+               out.deleteOnExit()
+               out.canonicalPath
+           }
+       }
+
+        val outputFile = File(outputPath)
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
+
+        imageCapture?.takePicture(
+            outputOptions, ContextCompat.getMainExecutor(getActivity()), object : ImageCapture.OnImageSavedCallback {
+                override fun onError(ex: ImageCaptureException) {
+                    Log.e(TAG, "CameraView: Photo capture failed", ex)
+                    promise.reject("E_CAPTURE_FAILED", "takePicture failed: ${ex.message}")
+                }
+
+                override fun  onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    try {
+                        val uri = outputFileResults.savedUri ?: Uri.fromFile(outputFile)
+                        val id = uri?.path
+                        val name = uri?.lastPathSegment
+                        val path = uri?.path
+
+                        val savedUri = (outputFileResults.savedUri ?: outputPath).toString()
+
+                        val imageInfo = Arguments.createMap()
+                        imageInfo.putString("uri", uri.toString())
+                        imageInfo.putString("id", id)
+                        imageInfo.putString("name", name)
+                        imageInfo.putInt("width", width)
+                        imageInfo.putInt("height", height)
+                        imageInfo.putString("path", path)
+
+                        promise.resolve(imageInfo)
+                    }catch (ex: Exception) {
+                        Log.e(TAG, "Error while saving or decoding saved photo: ${ex.message}", ex)
+                        promise.reject("E_ON_IMG_SAVED", "Error while reading saved photo: ${ex.message}")
+                    }
+                }
+            }
+        )
+
+    }
+
 
     enum class OnScriptLoadedEventResult() {
         success(),

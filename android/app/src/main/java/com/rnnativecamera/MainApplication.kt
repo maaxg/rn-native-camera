@@ -12,6 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.app.specs.NativeLocalStoragePackage
+import com.nativecamera.ReactNativeCameraModule
 import com.nativecamera.ReactNativeCameraPackage
 import com.nativewebview.ReactWebViewPackage
 

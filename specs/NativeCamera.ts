@@ -6,10 +6,10 @@ type CameraLoadEvent = {
   result: 'succcess' | 'error';
 };
 
-export interface WebViewProps extends ViewProps {
+export interface NativeCameraProps extends ViewProps {
   onCameraReady?: BubblingEventHandler<CameraLoadEvent> | null;
 }
 
-export default codegenNativeComponent<WebViewProps>(
+export default codegenNativeComponent<NativeCameraProps>(
   'NativeCamera',
-) as HostComponent<WebViewProps>;
+) as HostComponent<NativeCameraProps>;

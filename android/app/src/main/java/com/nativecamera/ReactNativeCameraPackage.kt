@@ -13,15 +13,15 @@ class ReactNativeCameraPackage : TurboReactPackage() {
 
     override fun getModule(s: String, reactApplicationContext: ReactApplicationContext): NativeModule? {
         when (s) {
-            ReactNativeCameraManager.REACT_CLASS -> ReactNativeCameraManager(reactApplicationContext)
+            ReactNativeCameraModule.REACT_CLASS -> return ReactNativeCameraModule(reactApplicationContext)
         }
         return null
     }
 
     override fun getReactModuleInfoProvider(): ReactModuleInfoProvider = ReactModuleInfoProvider {
-        mapOf(ReactNativeCameraManager.REACT_CLASS to ReactModuleInfo(
-            _name = ReactNativeCameraManager.REACT_CLASS,
-            _className = ReactNativeCameraManager.REACT_CLASS,
+        mapOf(ReactNativeCameraModule.REACT_CLASS to ReactModuleInfo(
+            _name = ReactNativeCameraModule.REACT_CLASS,
+            _className = ReactNativeCameraModule.REACT_CLASS,
             _canOverrideExistingModule = false,
             _needsEagerInit = false,
             isCxxModule = false,
